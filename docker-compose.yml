@@ -16,9 +16,14 @@ services:
       - nodemodules:/usr/src/app/node_modules
     links:
       - mongo
+      - postgres
+      - redis
+      - rabbit
     depends_on:
       - mongo
       - postgres
+      - redis
+      - rabbit
 
   mongo:
     image: mongo:3.6
@@ -42,10 +47,13 @@ services:
 
   rabbit:
     image: rabbitmq:3.8
+    hostname: "rabbit"
     env_file:
-      - .env
+      - ./.rabbitmq/.env
     volumes:
       - ./.rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./.rabbitmq/rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+      - ./.rabbitmq/logs/:/var/log/rabbitmq/
 
 volumes:
   nodemodules: {}
