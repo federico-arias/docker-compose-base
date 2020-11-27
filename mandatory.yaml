@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsapp-notifications
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whatsapp-notifications
+  template:
+    metadata:
+      labels:
+        app: whatsapp-notifications
+    spec:
+      containers:
+        - name: whatsapp-notifications
+          image: __DOCKER_IMAGE__:__TAG__
+          ports:
+            - containerPort: 7004
+          env:
+            - name: POSTGRES_DSN
+              value: "postgres://deploy%40zeroq-db:asdf1234@zeroq-db.postgres.database.azure.com:/zeroq_prod?sslmode=require"
+            - name: MONGO_DSN
+              value: 'mongodb+srv://zeroq:Z3r0Qu3u3@zeroqdb-cluster-23ohr.azure.mongodb.net/test?retryWrites=true&w=majority'
+            - name: RABBIT_DSN
+              value: "amqp://zeroq:zeroq@broker.zeroq.cl"
+          imagePullPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: whatsapp-notifications
+spec:
+  type: ClusterIP
+  ports:
+  - port: 7004
+    targetPort: 7004
+  selector:
+    app: whatsapp-notifications
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whatsapp-notifications
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`zeroq.cl`) && PathPrefix(`/services/notifications/whatsapp`)
+    kind: Rule
+    middlewares:
+     - name: cors
+       namespace: traefik
+    services:
+    - name: whatsapp-notifications
+      port: 7004
+      namespace: prod-services
+  tls:
+     certificates:
+       - certFile: /ssl/cert_chain.crt
+         keyFile: /ssl/server.key

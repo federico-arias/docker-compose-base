@@ -1,9 +1,9 @@
-import axios from "axios";
-import { pathOr } from "./utils";
+import axios, { AxiosResponse } from "axios";
 // check for office preferences
 
 interface IOffice {
 	options: IOptions;
+	timezone: string;
 }
 
 interface IOptions {
@@ -14,18 +14,19 @@ interface INotificationOptions {
 	whatsapp: boolean;
 }
 
-export const isWhatsappEnabled = async (
-	officeId: number
-): Promise<boolean> => {
+export const getOffice = async (
+	officeSlug: string
+): Promise<IOffice> => {
 	return axios
-		.get(`https://zeroq.cl/api/v1/offices/${officeId}`)
-		.then(
-			(res: IOffice) =>
-				res &&
-				res.data &&
-				res.data.data &&
-				res.data.options &&
-				res.data.options.notifications &&
-				res.data.options.notifications.whatsapp &&
-		);
+		.get<IOffice>(`https://zeroq.cl/api/v1/state/${officeSlug}`)
+		.then((res: AxiosResponse<IOffice>) => res.data);
+};
+
+export const isWhatsAppEnabled = (office: IOffice): boolean => {
+	return (
+		office &&
+		office.options &&
+		office.options.notifications &&
+		office.options.notifications.whatsapp
+	);
 };
