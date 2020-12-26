@@ -42,10 +42,10 @@ services:
 
   redis:
     image: redis:6-alpine
-    env_file:
-      - .redis/.env
-    volumes:
-      - .redis/redis.conf:/usr/local/etc/redis/redis.conf
+    #env_file:
+      #- .redis/.env
+      #volumes:
+      #- .redis/redis.conf:/usr/local/etc/redis/redis.conf
 
   rabbit:
     image: rabbitmq:3.8
