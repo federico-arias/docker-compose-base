@@ -1,11 +1,23 @@
-# Use
+This is a
 
+# Installation
+
+1. `cp -R .env .docker .redis .postgres .rabbit .mongo .dockerignore
+   docker-compose.yaml ${your_project_folder}`
 1. `docker-compose build`
-2. `docker-compose up`
+2. `docker-compose up #docker-compose up --force-build?`
 
-# Utils
+# Getting started
 
-* To dump a table from Postgres:
+You can populate your databases with data from your production
+tables, using either only your schema and/or your data.
+
+Each database provides a special tool for this purpose:
+
+* Mongo: `mongodump`
+* Postgres: `pgdump`
+
+## Postgres
 
 ```bash
 tables="offices_tags"
@@ -16,9 +28,13 @@ pg_dump $DB_CONNECTION_STRING -t "public.${table}"  > ".postgres/docker-entrypoi
 done
 ```
 
-# Container debugging
+## Mongo
+
+
+# Debugging
 
 * `docker exec -it ${container_hash} rabbitmqctl list_users` - access RabbitMQ CLI.
-* `source .postgres/.env && docker exec -it psql -U -P` - access
+* `source .postgres/.env && docker exec -it psql $POSTGRES_DSN` - access
 	PostgreSQL CLI.
-* `docker exec -it ${hash} mongo` - access Mongo Shell.
+* `docker exec -it ${container_hash} mongo $MONGO_DSN` - access Mongo Shell.
+* `docker exec -it ${container_hash} redis-cli` - acces Redis CLI.
