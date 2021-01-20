@@ -1,11 +1,32 @@
-This is a
+# Introduction
+
+Docker Compose Starter's Template provides a development
+environment for different languages and databases.
+
+It supports the following languages:
+
+* Node
+* Typescript
+* Go
+
+It also provides fixtures and migration capabilities for the following
+databases:
+
+* Redis
+* PostgreSQL
+* RabbitMQ
+* Mongo
 
 # Installation
 
-1. `cp -R .env .docker .redis .postgres .rabbit .mongo .dockerignore
-   docker-compose.yaml ${your_project_folder}`
-1. `docker-compose build`
-2. `docker-compose up #docker-compose up --force-build?`
+1. `install dcst ${HOME}/.local/bin`
+
+# Use
+
+1. `dcst go redis postgres` - installs a Go base app with Redis and
+   PostgreSQL databases.
+2. `docker-compose up --force-build` -  use `--force-build` in case a
+   dependency changes.
 
 # Getting started
 
@@ -32,6 +53,10 @@ done
 
 
 # Debugging
+
+```bash
+export container_hash=$(docker ps -aqf 'name=<container name>')
+```
 
 * `docker exec -it ${container_hash} rabbitmqctl list_users` - access RabbitMQ CLI.
 * `source .postgres/.env && docker exec -it psql $POSTGRES_DSN` - access

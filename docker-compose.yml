@@ -3,14 +3,43 @@ services:
 
   main:
     build:
-      context: ./
-      dockerfile: ./.docker/Dockerfile
+      context: ./sample_apps/go
+      dockerfile: ./Dockerfile
     # `command` overrides the default CMD
-    command: yarn run start # npm run test:integration on CI
+    command:
+      - air
+    #command: # for integration testing
+      #- go
+      #- test
     env_file:
       - .env
     ports:
-      - "127.0.0.1:${DOCKER_HOST_PORT}:${DOCKER_CONTAINER_PORT}/tcp"
+      - "127.0.0.1:${HOST_PORT}:${CONTAINER_PORT}/tcp"
+    volumes:
+      - ./:/app # mounts app from host for hot-reloading
+      - gomodules:/go/pkg/mod
+        #links:
+        #- mongo
+        #- postgres
+        #- redis
+        #- rabbit
+        #depends_on:
+        #- mongo
+        #- postgres
+        #- redis
+        #- rabbit
+
+  node:
+    build:
+      context: ./sample_apps/node
+      dockerfile: ./.Dockerfile
+      # `command` overrides the default CMD
+    command: yarn run start
+    # yarn run test:integration
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:${HOST_PORT}:${CONTAINER_PORT}/tcp"
     volumes:
       - ./:/usr/src/app # mounts app from host for hot-reloading
       - nodemodules:/usr/src/app/node_modules
@@ -25,10 +54,11 @@ services:
       - redis
       - rabbit
 
+
   mongo:
     image: mongo:3.6
     env_file:
-      - .env
+      - .mongo/.env
         #volumes:
         #- mongodb_data_container:/data/db
 
@@ -59,4 +89,5 @@ services:
 
 volumes:
   nodemodules: {}
+  gomodules: {}
   #mongodb_data_container:
