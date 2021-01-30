@@ -7,54 +7,41 @@ services:
       dockerfile: ./Dockerfile
     command:
       - air
-    #command: # for integration testing
-      #- go
-      #- test
+    # from shell to docker-compose
     env_file:
-      - .env
+      - ./.env
+    # from docker-compose to container env
+    environment:
+      - REDIS_DSN
+      - MONGO_DSN
+      - POSTGRES_DSN
+      - SECRET
+      - PORT=${CONTAINER_PORT}
+    {{- range .Values.envs }}
+      - {{ .key }}:{{ .value }}
+    {{-end }}
     ports:
-      - "127.0.0.1:${HOST_PORT}:${CONTAINER_PORT}/tcp"
+      - "127.0.0.1:{{ .Values.port }}:9000/tcp"
     volumes:
       - ./:/app # mounts app from host for hot-reloading
       - gomodules:/go/pkg/mod
-        #depends_on:
-        #- mongo
-        #- postgres
-        #- redis
-        #- rabbit
+      {{- if .Values.db }}
+      depends_on:
+      {{- end }}
+        {{- range .Values.db }}
+        - {{ . }}
+        {{- end }}
 
-  node:
-    build:
-      context: ./sample_apps/node
-      dockerfile: ./.Dockerfile
-      # `command` overrides the default CMD
-    command: yarn run start:watch
-    # yarn run test:integration
-    env_file:
-      - .env
-    ports:
-      - "127.0.0.1:${HOST_PORT}:${CONTAINER_PORT}/tcp"
-    volumes:
-      - ./:/usr/src/app # mounts app from host for hot-reloading
-      - nodemodules:/usr/src/app/node_modules
-    links:
-      - mongo
-      - postgres
-      - redis
-      - rabbit
-    depends_on:
-      - mongo
-      - postgres
-      - redis
-      - rabbit
-
+  {{- if .Values.mongo }}
   mongo:
     image: mongo:3.6
     env_file:
       - .mongo/.env
-        #volumes:
-        #- mongodb_data_container:/data/db
+    volumes:
+      - mongodb_data_container:/data/db
+  {{- end }}
 
+  {{- if .Values.postgres }}
   postgres:
     image: postgres:9.6
     hostname: postgres
@@ -62,14 +49,18 @@ services:
       - .postgres/.env
     volumes:
       - .postgres/docker-entrypoint-initdb.d/:/docker-entrypoint-initdb.d/
+  {{- end }}
 
+  {{- if .Values.redis }}
   redis:
     image: redis:6-alpine
     env_file:
       - .redis/.env
     volumes:
       - .redis/redis.conf:/usr/local/etc/redis/redis.conf
+  {{- end }}
 
+  {{- if .Values.rabbit }}
   rabbit:
     image: rabbitmq:3.8
     hostname: "rabbit"
@@ -79,8 +70,9 @@ services:
       - ./.rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
       - ./.rabbitmq/rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
       - ./.rabbitmq/logs/:/var/log/rabbitmq/
+  {{- end }}
 
 volumes:
   nodemodules: {}
   gomodules: {}
-  #mongodb_data_container:
+  mongodb_data_container: {}

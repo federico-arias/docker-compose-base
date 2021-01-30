@@ -19,11 +19,11 @@ databases:
 
 # Installation
 
-1. `install dcst ${HOME}/.local/bin`
+1. `go get github.com/federico-arias/conductor`
 
 # Use
 
-1. `dcst go redis postgres` - installs a Go base app with Redis and
+1. `conductor go redis postgres` - installs a Go base app with Redis and
    PostgreSQL databases.
 2. `docker-compose up --force-build` -  use `--force-build` in case a
    dependency changes.

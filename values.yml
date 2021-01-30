@@ -1,0 +1,7 @@
+root: ./
+# name: "myname"
+lang: go
+port: 1313
+db:
+  - postgres
+ci: gitlab
